@@ -11,20 +11,34 @@
 // specific language governing permissions and limitations under the License.
 
 const { ethers } = require("ethers");
+const crypto = require('crypto');
+const { privateKey, publicKey } = crypto.generateKeyPairSync('ec', { namedCurve: 'sect233k1' });
+
 
 const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL;
 console.log("HTTP rollup_server url is " + rollup_server);
 
+async function sign_message(data) {
+    const sign = crypto.createSign('SHA256');
+    sign.update(data);
+    sign.end();
+    const signature = sign.sign(privateKey);
+    return signature
+}
+
 async function handle_advance(data) {
     console.log("Received advance request data " + JSON.stringify(data));
-    const payload = data["payload"];
+    const payload = data.payload;
+    const payloadStr = ethers.utils.toUtf8String(payload);
     try {
-        const payloadStr = ethers.utils.toUtf8String(payload);
         console.log(`Adding notice "${payloadStr}"`);
-        console.log(`Akan is testing also`);
+        
     } catch (e) {
         console.log(`Adding notice with binary value "${payload}"`);
     }
+    const signature = await sign_message(payloadStr);
+    console.log(`Here is the signature: ${signature}`);
+
     const advance_req = await fetch(rollup_server + '/notice', {
         method: 'POST',
         headers: {
