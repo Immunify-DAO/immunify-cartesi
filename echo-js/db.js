@@ -20,7 +20,7 @@ function createDbConnection() {
 
 function createTable(db) {
     db.exec(`
-    CREATE TABLE patient
+    CREATE TABLE patients   
         (
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
             name   VARCHAR(50) NOT NULL,

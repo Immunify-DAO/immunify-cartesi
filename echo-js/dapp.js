@@ -13,6 +13,8 @@
 const { ethers } = require("ethers");
 const crypto = require('crypto');
 const { privateKey, publicKey } = crypto.generateKeyPairSync('ec', { namedCurve: 'sect233k1' });
+const insertRow = require("./middleware/insertRow");
+// const db = require("./db");
 
 
 const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL;
@@ -38,6 +40,11 @@ async function handle_advance(data) {
     }
     const signature = await sign_message(payloadStr);
     console.log(`Here is the signature: ${signature}`);
+
+    // await insertRow("signature", 12, 12);
+
+    const lastId = await insertRow('Akan', 30, 150);
+    console.log(`Inserted a row with the ID: ${lastId}`);
 
     const advance_req = await fetch(rollup_server + '/notice', {
         method: 'POST',
