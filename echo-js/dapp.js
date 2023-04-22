@@ -14,7 +14,7 @@ const { ethers } = require("ethers");
 const crypto = require('crypto');
 const { privateKey, publicKey } = crypto.generateKeyPairSync('ec', { namedCurve: 'sect233k1' });
 const insertRow = require("./middleware/insertRow");
-// const db = require("./db");
+const getRow = require("./middleware/getRow");
 
 
 const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL;
@@ -28,23 +28,51 @@ async function sign_message(data) {
     return signature
 }
 
+// Add Patient Handler
+async function handle_add_patient(address, name, age) {
+    const lastId = await insertRow(address, name, age);
+    console.log(`Added a new patient with the ID: ${lastId}`);
+}
+
+async function handle_get_patient(address) {
+    const patient = await getRow(address);
+    console.log(`Patient Data: ${patient}`);
+}
+
 async function handle_advance(data) {
     console.log("Received advance request data " + JSON.stringify(data));
     const payload = data.payload;
     const payloadStr = ethers.utils.toUtf8String(payload);
+
+    const inputArr = payloadStr.split(" ");
+    
+    console.log(inputArr);
     try {
         console.log(`Adding notice "${payloadStr}"`);
-        
+
+        if (inputArr[0] == "patient") {
+            parseInt(inputArr[4], 10);
+            if (inputArr[1] == "GET") {
+                console.log("getting")
+                await handle_get_patient(inputArr[2]);
+            } else if (inputArr[1] == "POST") {
+                console.log("Posting");
+                await handle_add_patient(...inputArr.slice(2, 5));
+            } else {
+                console.log("Patient Handler not found");
+            }
+
+        } else if (inputArr[0] == "consultation") {
+            console.log("To be implemented");
+        } else {
+            console.log("No matching API");
+        }  
     } catch (e) {
         console.log(`Adding notice with binary value "${payload}"`);
     }
     const signature = await sign_message(payloadStr);
     console.log(`Here is the signature: ${signature}`);
 
-    // await insertRow("signature", 12, 12);
-
-    const lastId = await insertRow('Akan', 30, 150);
-    console.log(`Inserted a row with the ID: ${lastId}`);
 
     const advance_req = await fetch(rollup_server + '/notice', {
         method: 'POST',

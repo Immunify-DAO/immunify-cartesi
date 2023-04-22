@@ -1,24 +1,10 @@
 const db = require("../db");
 
-// function insertRow(name, age, weight) {
-//     // const [name, age, weight] = process.argv.slice(2);
-//     db.run(
-//         `INSERT INTO patients (name, age, weight) VALUES (?, ?, ?)`,
-//         [name, age, weight],
-//         function (error) {
-//             if (error) {
-//                 console.error(error.message);
-//             }
-//             console.log(`Inserted a row with the ID: ${this.lastID}`);
-//         }
-//     );
-// }
-
-function insertRow(name, age, weight) {
+function insertRow(address, name, age) {
     return new Promise((resolve, reject) => {
         db.run(
-            `INSERT INTO patients (name, age, weight) VALUES (?, ?, ?)`,
-            [name, age, weight],
+            `INSERT INTO patients (address, name, age) VALUES (?, ?, ?)`,
+            [address, name, age],
             function (error) {
                 if (error) {
                     reject(error);
@@ -30,5 +16,4 @@ function insertRow(name, age, weight) {
     });
 }
 
-// insertRow();
 module.exports = insertRow;

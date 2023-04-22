@@ -23,9 +23,9 @@ function createTable(db) {
     CREATE TABLE patients   
         (
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            address VARCHAR(50) NOT NULL,
             name   VARCHAR(50) NOT NULL,
-            age   INTEGER NOT NULL,
-            weight INTEGER NOT NULL
+            age   INTEGER NOT NULL
         );
     `);
 }
