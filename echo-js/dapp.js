@@ -11,8 +11,7 @@
 // specific language governing permissions and limitations under the License.
 
 const { ethers } = require("ethers");
-const crypto = require('crypto');
-const { privateKey, publicKey } = crypto.generateKeyPairSync('ec', { namedCurve: 'sect233k1' });
+const { encryptData, decryptData } = require("./encryption_module/encrypt");
 const insertRow = require("./middleware/insertRow");
 const getRow = require("./middleware/getRow");
 
@@ -20,23 +19,21 @@ const getRow = require("./middleware/getRow");
 const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL;
 console.log("HTTP rollup_server url is " + rollup_server);
 
-async function sign_message(data) {
-    const sign = crypto.createSign('SHA256');
-    sign.update(data);
-    sign.end();
-    const signature = sign.sign(privateKey);
-    return signature
-}
-
-// Add Patient Handler
+// POST Patient Handler
 async function handle_add_patient(address, name, age) {
     const lastId = await insertRow(address, name, age);
     console.log(`Added a new patient with the ID: ${lastId}`);
 }
 
+// GET Patient Handler
 async function handle_get_patient(address) {
     const patient = await getRow(address);
     console.log(`Patient Data: ${patient}`);
+}
+
+async function handle_encrypt(data) {
+    const encrypted = await encryptData(data);
+    console.log(`Here is the encrypted name: ${encrypted}`);
 }
 
 async function handle_advance(data) {
@@ -49,15 +46,18 @@ async function handle_advance(data) {
     console.log(inputArr);
     try {
         console.log(`Adding notice "${payloadStr}"`);
-
+        
         if (inputArr[0] == "patient") {
+            handle_encrypt(inputArr[3]);
+            
             parseInt(inputArr[4], 10);
             if (inputArr[1] == "GET") {
-                console.log("getting")
+                console.log("Fetching Data")
                 await handle_get_patient(inputArr[2]);
             } else if (inputArr[1] == "POST") {
-                console.log("Posting");
+                console.log("Posting Data");
                 await handle_add_patient(...inputArr.slice(2, 5));
+
             } else {
                 console.log("Patient Handler not found");
             }
@@ -70,8 +70,8 @@ async function handle_advance(data) {
     } catch (e) {
         console.log(`Adding notice with binary value "${payload}"`);
     }
-    const signature = await sign_message(payloadStr);
-    console.log(`Here is the signature: ${signature}`);
+    // const signature = await sign_message(payloadStr);
+    // console.log(`Here is the signature: ${signature}`);
 
 
     const advance_req = await fetch(rollup_server + '/notice', {
