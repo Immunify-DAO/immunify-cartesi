@@ -23,9 +23,29 @@ function createTable(db) {
     CREATE TABLE patients   
         (
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            address VARCHAR(50) UNIQUE NOT NULL,
+            name VARCHAR(50) NOT NULL,
+            age INTEGER NOT NULL
+        );
+    `);
+
+    db.exec(`
+    CREATE TABLE recordStaff
+        (
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            address VARCHAR(50) NOT NULL,
+            name   VARCHAR(50) NOT NULL
+        );
+    `);
+
+    db.exec(`
+    CREATE TABLE consultations
+        (
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,
             address VARCHAR(50) NOT NULL,
             name   VARCHAR(50) NOT NULL,
-            age   INTEGER NOT NULL
+            patient_addr INTEGER NOT NULL,
+            FOREIGN KEY (patient_addr) REFERENCES patients(ID)
         );
     `);
 }

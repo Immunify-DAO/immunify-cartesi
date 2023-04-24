@@ -12,25 +12,52 @@
 
 const { ethers } = require("ethers");
 const { encryptData, decryptData } = require("./encryption_module/encrypt");
-const insertRow = require("./middleware/insertRow");
-const getRow = require("./middleware/getRow");
+const { insertRowPatient, getRowPatient} = require("./middleware/patient/patientSchema");
+const { insertRowRecord, getRowRecord} = require("./middleware/authentication/recordOfficers/auth");
 
 
 const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL;
 console.log("HTTP rollup_server url is " + rollup_server);
 
+//Admin Functions
+async function handle_auth(param1, param2, address, name) {
+    if (param1 == "records") {
+
+        if (param2 == "add-record") {
+            // Add only Admin function
+            insertRowAuth(address, name)
+        } else if (param2 == "verify-record") {
+
+        }
+    } else {
+        console.log("Auth function not found");
+    }
+}
+
+async function handle_add_record_addr(address, name) {
+    const lastId = await insertRowRecord(address, name);
+    console.log(`Added a new record officer with the ID: ${lastId}`); 
+}
+
+//////////////////////////////////
+/////////Patient Handler//////////
+//////////////////////////////////
+
 // POST Patient Handler
 async function handle_add_patient(address, name, age) {
-    const lastId = await insertRow(address, name, age);
+    const lastId = await insertRowPatient(address, name, age);
     console.log(`Added a new patient with the ID: ${lastId}`);
 }
 
 // GET Patient Handler
 async function handle_get_patient(address) {
-    const patient = await getRow(address);
+    const patient = await getRowPatient(address);
     console.log(`Patient Data: ${patient}`);
 }
 
+//////////////////////////////////
+///////////Encryption/////////////
+//////////////////////////////////
 async function handle_encrypt(data) {
     const encrypted = await encryptData(data);
     console.log(`Here is the encrypted name: ${encrypted}`);
@@ -46,33 +73,52 @@ async function handle_advance(data) {
     console.log(inputArr);
     try {
         console.log(`Adding notice "${payloadStr}"`);
+
+        const selector = inputArr[0];
+        const method = inputArr[1];
+        const addr = inputArr[2];
         
-        if (inputArr[0] == "patient") {
-            handle_encrypt(inputArr[3]);
+        if (selector == "patient") {
             
             parseInt(inputArr[4], 10);
-            if (inputArr[1] == "GET") {
-                console.log("Fetching Data")
-                await handle_get_patient(inputArr[2]);
-            } else if (inputArr[1] == "POST") {
-                console.log("Posting Data");
-                await handle_add_patient(...inputArr.slice(2, 5));
+            const patientData = inputArr.slice(2, 5);
 
-            } else {
-                console.log("Patient Handler not found");
+            switch (method) {
+                case 'GET':
+                    console.log('Fetching Data');
+                    if (addr) {
+                        await handle_get_patient(addr);
+                    } else {
+                        console.log('Invalid input: address must be defined');
+                    }
+                    break;
+                case 'POST':
+                    console.log('Posting Data');
+                    await handle_add_patient(...patientData);
+                    break;
+                default:
+                    console.log('Invalid patient handler method:', method);
             }
 
-        } else if (inputArr[0] == "consultation") {
+        } else if (selector == "consultation") {
             console.log("To be implemented");
+        } else if (selector == "adminfunc") {
+            
+            switch (method) {
+                case 'POST-R':
+                    console.log("Adding to Record permission list");
+                    await handle_add_record_addr(inputArr.slice(2,4));
+                    break;
+                case 'POST-D':
+                    console.log("Adding to Doctors permission list");
+                    break;
+            }
         } else {
-            console.log("No matching API");
-        }  
+            console.log("No Matching API");
+        }
     } catch (e) {
         console.log(`Adding notice with binary value "${payload}"`);
     }
-    // const signature = await sign_message(payloadStr);
-    // console.log(`Here is the signature: ${signature}`);
-
 
     const advance_req = await fetch(rollup_server + '/notice', {
         method: 'POST',
