@@ -4,6 +4,14 @@
 
 [Link to WhitePaper](https://drive.google.com/file/d/1OvKDHFv9M518PRhFEM9xFrmwv2oO5wTX/view?usp=share_link)
 
+## Key Features
+1. Deployed a Decentralised SQLite Database
+2. Added 2 way Data Encryption Algorithm before persisting data on Cartesi
+
+### To be implemented
+1. Tokenization of Health information as NFTs
+2. Building a Defentralized Health Marketplace
+
 ## Immunify: A Decentralized Permissionless Health Protocol
 
 Thank you for taking the time to review the Immunify white paper. The document is the outcome of a collaborative effort between medical professionals and experts in blockchain technology. The Immunify platform leverages blockchain technology to establish a patient-centric electronic health record system that maintains a single, immutable version of patient data. With Immunify, users are empowered to selectively authorize healthcare providers to access their personal health data.
@@ -17,7 +25,37 @@ Here are the available [payload] formats to be used while interacting with the b
 
 #### Patient 
 
-#### Consultation
+1. Adding a new Patinet 
+
+```shell
+yarn start input send --payload "patient POST <address> <name> <age>"
+```
+
+2. Querying a patient
+
+```shell
+yarn start input send --payload "patient GET <address>"
+```
+
+#### Consultations
+1. Adding a new consultation
+
+```shell
+yarn start input send --payload "consultation POST <medical_history>"
+```
+
+2. Querying a consultation
+
+```shell
+yarn start input send --payload "consultation GET <id>"
+```
+
+#### Admin Functions
+1. Adding a Doctor
+
+```shell
+yarn start input send --payload "adminfunc POST-D <address> <name>"
+```
 
 #### Admin Functions
 
