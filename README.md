@@ -81,24 +81,27 @@ The below instructions have been tested in systems running both Linux (Ubuntu), 
 
 ## Running
 
-To run the examples, first clone the repository as follows:
-
-```shell
-git clone https://github.com/Immunify-DAO/immunify-cartesi
-```
-
 The Immunify App is currently executed in Host modes, as explained below.
 
 
-### Host mode
+### Setting up in Host mode
 
 The _Cartesi Rollups Host Environment_ provides the very same HTTP API as the regular one, mimicking the behavior of the actual layer-1 and layer-2 components. This way, the Cartesi Rollups infrastructure can make HTTP requests to a back-end that is running natively on localhost. This allows the developer to test and debug the back-end logic using familiar tools, such as an IDE.
 
 The host environment can be executed with the following command:
 
 ```shell
+git clone https://github.com/Immunify-DAO/immunify-cartesi.git
+```
+```shell
 cd immunify-js
 docker compose -f ../docker-compose.yml -f ./docker-compose.override.yml -f ../docker-compose-host.yml up
+```
+
+Spin up another terminal and run. This spins up the immunify backend and connects to the cartesi rollup host.
+```shell
+cd immunify-js
+yarn start
 ```
 
 _Note_: When running in host mode, localhost port `5004` will be used by default to allow the DApp's back-end to communicate with the Cartesi Rollups framework.
