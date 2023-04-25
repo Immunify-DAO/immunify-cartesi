@@ -4,6 +4,9 @@
 
 [Link to WhitePaper](https://drive.google.com/file/d/1OvKDHFv9M518PRhFEM9xFrmwv2oO5wTX/view?usp=share_link)
 
+Build for the Cartesi Hackathon.
+Thanks for giving us this opportunity to share our work. We wish we 
+
 ## Key Features
 1. Deployed a Decentralised SQLite Database
 2. Added 2 way Data Encryption Algorithm before persisting data on Cartesi
