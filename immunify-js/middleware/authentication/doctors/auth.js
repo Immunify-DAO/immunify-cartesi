@@ -1,13 +1,14 @@
 const db = require("../../../db");
 
-function getRowRecord(address) {
+function getRowDoctor(address) {
     return new Promise((resolve, reject) => {
         db.all(
-            `SELECT * FROM recordStaff WHERE address = ?`, 
+            `SELECT * FROM doctors WHERE address = ?`, 
             [address],
             function (error, rows) {
                 if (error) {
                     reject(error);
+                    console.log(error);
                 } else {
                     const values = rows.map((row) => Object.values(row));
                     console.log(values);
@@ -18,10 +19,10 @@ function getRowRecord(address) {
     });
 }
 
-function insertRowRecord(address, name) {
+function insertRowDoctor(address, name) {
     return new Promise((resolve, reject) => {
         db.run(
-            `INSERT INTO recordStaff (address, name) VALUES (?, ?)`,
+            `INSERT INTO doctors (address, name) VALUES (?, ?)`,
             [address, name],
             function (error) {
                 if (error) {
@@ -35,4 +36,4 @@ function insertRowRecord(address, name) {
     });
 }
 
-module.exports = { getRowRecord, insertRowRecord };
+module.exports = { getRowDoctor, insertRowDoctor };

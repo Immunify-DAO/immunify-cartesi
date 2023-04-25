@@ -13,30 +13,34 @@
 const { ethers } = require("ethers");
 const { encryptData, decryptData } = require("./encryption_module/encrypt");
 const { insertRowPatient, getRowPatient} = require("./middleware/patient/patientSchema");
+const { insertRowConsultation, getRowConsultation } = require("./middleware/consultations/consultationSchema");
 const { insertRowRecord, getRowRecord} = require("./middleware/authentication/recordOfficers/auth");
+const { insertRowDoctor, getRowDoctor} = require("./middleware/authentication/doctors/auth");
 
 
 const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL;
 console.log("HTTP rollup_server url is " + rollup_server);
 
-//Admin Functions
-async function handle_auth(param1, param2, address, name) {
-    if (param1 == "records") {
-
-        if (param2 == "add-record") {
-            // Add only Admin function
-            insertRowAuth(address, name)
-        } else if (param2 == "verify-record") {
-
-        }
-    } else {
-        console.log("Auth function not found");
-    }
-}
+//////////////////////////////////
+/////////Admin Handler////////////
+//////////////////////////////////
 
 async function handle_add_record_addr(address, name) {
     const lastId = await insertRowRecord(address, name);
     console.log(`Added a new record officer with the ID: ${lastId}`); 
+}
+
+async function handle_add_doctor_addr(address, name) {
+    const lastId = await insertRowDoctor(address, name);
+    console.log(`Added a new Doctor with the ID: ${lastId}`); 
+}
+
+async function handle_get_doctor_addr(address) {
+    const lastId = await getRowDoctor(address);
+    console.log(`Hello Doctor: ${lastId}`);
+    const id = lastId[0];
+    console.log(id);
+    return id;
 }
 
 //////////////////////////////////
@@ -56,17 +60,36 @@ async function handle_get_patient(address) {
 }
 
 //////////////////////////////////
+///////Consultation Handler///////
+//////////////////////////////////
+
+// POST Consultation Handler
+async function handle_add_consultation(history) {
+    const lastId = await insertRowConsultation(history);
+    console.log(`Added a new consultation with the ID: ${lastId}`);
+}
+
+// GET Consultation Handler
+async function handle_get_consultation(id) {
+    const patient = await getRowPatient(id);
+    console.log(`Patient Data: ${patient}`);
+}
+
+//////////////////////////////////
 ///////////Encryption/////////////
 //////////////////////////////////
 async function handle_encrypt(data) {
     const encrypted = await encryptData(data);
-    console.log(`Here is the encrypted name: ${encrypted}`);
+    console.log(`Here is the encrypted result: ${encrypted}`);
 }
 
 async function handle_advance(data) {
     console.log("Received advance request data " + JSON.stringify(data));
     const payload = data.payload;
     const payloadStr = ethers.utils.toUtf8String(payload);
+
+    const sender = data.metadata.msg_sender;
+    console.log(`The caller of this contract is ${sender}`);
 
     const inputArr = payloadStr.split(" ");
     
@@ -82,7 +105,7 @@ async function handle_advance(data) {
             
             parseInt(inputArr[4], 10);
             const patientData = inputArr.slice(2, 5);
-
+            
             switch (method) {
                 case 'GET':
                     console.log('Fetching Data');
@@ -92,25 +115,50 @@ async function handle_advance(data) {
                         console.log('Invalid input: address must be defined');
                     }
                     break;
+                    case 'POST':
+                        console.log('Posting Data');
+                        await handle_add_patient(...patientData);
+                        break;
+                        default:
+                            console.log('Invalid patient handler method:', method);
+                        }
+                        
+        } else if (selector == "consultation") {
+                        
+            const consultationData = inputArr[2];
+            const id = parseInt(addr);
+
+            switch (method) {
+                case 'GET':
+                    console.log('Fetching Cousultation Data');
+                    await handle_get_consultation(id);
+                    break;
                 case 'POST':
-                    console.log('Posting Data');
-                    await handle_add_patient(...patientData);
+                    console.log('Adding Consultation Data');
+                    console.log('Validating Credentials...');
+
+                    // const res = await handle_get_doctor_addr(sender);
+                    // console.log(res[0]);
+                    // console.log("Credentials Validated");
+
+                    const encrData = await handle_encrypt(consultationData);
+                    await handle_add_consultation(encrData);
+
                     break;
                 default:
-                    console.log('Invalid patient handler method:', method);
+                    console.log('Invalid Consultation handler method:', method);
             }
 
-        } else if (selector == "consultation") {
-            console.log("To be implemented");
         } else if (selector == "adminfunc") {
             
             switch (method) {
                 case 'POST-R':
                     console.log("Adding to Record permission list");
-                    await handle_add_record_addr(inputArr.slice(2,4));
+                    await handle_add_record_addr(...inputArr.slice(2,4));
                     break;
                 case 'POST-D':
                     console.log("Adding to Doctors permission list");
+                    await handle_add_doctor_addr(...inputArr.slice(2,4));
                     break;
             }
         } else {

@@ -39,13 +39,19 @@ function createTable(db) {
     `);
 
     db.exec(`
-    CREATE TABLE consultations
+    CREATE TABLE doctors
         (
             ID INTEGER PRIMARY KEY AUTOINCREMENT,
             address VARCHAR(50) NOT NULL,
-            name   VARCHAR(50) NOT NULL,
-            patient_addr INTEGER NOT NULL,
-            FOREIGN KEY (patient_addr) REFERENCES patients(ID)
+            name   VARCHAR(50) NOT NULL
+        );
+    `);
+
+    db.exec(`
+    CREATE TABLE consultations
+        (
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            history VARCHAR(50) NOT NULL
         );
     `);
 }
